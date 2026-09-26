@@ -4,90 +4,266 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>JobFresh – Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:       #f4f6f9;
-    --surface:  #ffffff;
-    --border:   #e1e4e8;
-    --text:     #1f2328;
-    --muted:    #57606a;
-    --accent:   #2563eb;
-    --fresh:    #16a34a;
-    --review:   #d97706;
-    --stale:    #dc2626;
-    --dupe:     #7c3aed;
-    --radius:   8px;
+    --bg:         #0F1117;
+    --surface:    #16181F;
+    --surface-2:  #1E2028;
+    --border:     #2A2D38;
+    --text:       #E8EAF0;
+    --muted:      #8B8FA8;
+    --accent:     #6366F1;
+    --accent-dim: rgba(99,102,241,.15);
+    --fresh:      #22C55E;
+    --fresh-dim:  rgba(34,197,94,.12);
+    --review:     #F59E0B;
+    --review-dim: rgba(245,158,11,.12);
+    --stale:      #EF4444;
+    --stale-dim:  rgba(239,68,68,.12);
+    --dupe:       #A78BFA;
+    --dupe-dim:   rgba(167,139,250,.12);
+    --radius:     10px;
   }
 
   body {
-    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-family: 'Inter', -apple-system, "Segoe UI", system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.6;
     background: var(--bg);
     color: var(--text);
+    min-height: 100vh;
   }
 
-  /* ── Layout ─────────────────────────────────────────────── */
+  /* ── Header ──────────────────────────────────────────────── */
   header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    height: 56px;
+    padding: 0 32px;
+    height: 58px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
-  header h1 { font-size: 18px; font-weight: 700; }
-  header span { color: var(--muted); font-size: 13px; }
+  .header-logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .header-wordmark {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .header-wordmark span {
+    color: var(--fresh);
+  }
+  .header-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+    margin-left: 4px;
+  }
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  /* ── Layout ──────────────────────────────────────────────── */
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
 
-  /* ── Tabs ───────────────────────────────────────────────── */
+  /* ── Tabs ────────────────────────────────────────────────── */
   .tabs {
     display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
+    gap: 2px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
   }
   .tab {
-    padding: 8px 16px;
+    padding: 10px 18px;
     cursor: pointer;
     border: none;
     background: none;
-    font-size: 14px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--muted);
     border-bottom: 2px solid transparent;
-    margin-bottom: -2px;
+    margin-bottom: -1px;
     transition: color .15s;
+    letter-spacing: 0.01em;
   }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
 
   .view { display: none; }
   .view.active { display: block; }
 
-  /* ── Summary cards ──────────────────────────────────────── */
+  /* ── Summary strip ───────────────────────────────────────── */
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 14px;
-    margin-bottom: 28px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 860px) {
+    .cards { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
   }
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 18px 20px;
+    padding: 20px 20px 18px;
+    position: relative;
+    overflow: hidden;
   }
-  .card .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-  .card .value { font-size: 30px; font-weight: 700; margin-top: 4px; }
-  .card.fresh  .value { color: var(--fresh);  }
-  .card.review .value { color: var(--review); }
-  .card.stale  .value { color: var(--stale);  }
-  .card.dupe   .value { color: var(--dupe);   }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--border);
+  }
+  .card.fresh::before  { background: var(--fresh);  }
+  .card.review::before { background: var(--review); }
+  .card.stale::before  { background: var(--stale);  }
+  .card.dupe::before   { background: var(--dupe);   }
 
-  /* ── Tables ─────────────────────────────────────────────── */
+  .card .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-bottom: 10px;
+  }
+  .card .card-value {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+  .card.fresh  .card-value { color: var(--fresh);  }
+  .card.review .card-value { color: var(--review); }
+  .card.stale  .card-value { color: var(--stale);  }
+  .card.dupe   .card-value { color: var(--dupe);   }
+
+  /* ── Section heading ─────────────────────────────────────── */
+  .section-heading {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  /* ── Job cards (dashboard feed) ──────────────────────────── */
+  .job-feed { display: flex; flex-direction: column; gap: 10px; }
+
+  .job-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 20px;
+    align-items: start;
+    transition: border-color .12s;
+  }
+  .job-card:hover { border-color: #3A3D4E; }
+
+  .job-card-main { min-width: 0; }
+  .job-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .job-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .job-card-company {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .job-card-dot {
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .job-card-days {
+    font-size: 12px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .job-card-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .job-card-flags {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  .job-card-reasons {
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .job-card-reasons li {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 2px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .job-card-reasons li::before {
+    content: "▲";
+    font-size: 8px;
+    color: var(--review);
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Tables (review queue & all jobs tabs) ────────────────── */
   .table-wrap { overflow-x: auto; }
   table {
     width: 100%;
@@ -98,74 +274,152 @@
     border: 1px solid var(--border);
   }
   th {
-    background: var(--bg);
+    background: var(--surface-2);
     text-align: left;
-    padding: 10px 14px;
-    font-size: 12px;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .5px;
+    letter-spacing: .07em;
     color: var(--muted);
     border-bottom: 1px solid var(--border);
   }
   td {
-    padding: 11px 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     vertical-align: top;
+    color: var(--text);
   }
   tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #fafbfc; }
+  tr:hover td { background: var(--surface-2); }
 
-  /* ── Badges ─────────────────────────────────────────────── */
+  .td-title { font-weight: 600; font-size: 13px; }
+  .td-company { color: var(--muted); font-size: 13px; }
+  .td-days { font-variant-numeric: tabular-nums; color: var(--muted); }
+
+  /* ── Badges ──────────────────────────────────────────────── */
   .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 6px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .4px;
+    letter-spacing: .04em;
+    white-space: nowrap;
   }
-  .badge-fresh  { background: #dcfce7; color: #15803d; }
-  .badge-review { background: #fef3c7; color: #92400e; }
-  .badge-stale  { background: #fee2e2; color: #991b1b; }
-  .badge-closed { background: #f1f5f9; color: #64748b; }
-  .badge-dupe   { background: #ede9fe; color: #5b21b6; }
+  .badge-fresh  { background: var(--fresh-dim);  color: var(--fresh);  }
+  .badge-review { background: var(--review-dim); color: var(--review); }
+  .badge-stale  { background: var(--stale-dim);  color: var(--stale);  }
+  .badge-closed { background: rgba(139,143,168,.1); color: var(--muted); }
+  .badge-dupe   { background: var(--dupe-dim);   color: var(--dupe);   }
 
-  /* ── Action buttons ─────────────────────────────────────── */
+  /* ── Action buttons ──────────────────────────────────────── */
+  .actions { display: flex; gap: 4px; align-items: center; }
+
+  /* Icon-button pill group */
+  .action-group {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 32px;
+    background: var(--surface-2);
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: background .12s, color .12s;
+    position: relative;
+  }
+  .action-btn:last-child { border-right: none; }
+  .action-btn:hover { background: var(--surface); }
+  .action-btn.ab-confirm:hover { background: var(--fresh-dim); color: var(--fresh); }
+  .action-btn.ab-update:hover  { background: var(--accent-dim); color: var(--accent); }
+  .action-btn.ab-close:hover   { background: var(--stale-dim);  color: var(--stale);  }
+
+  /* Tooltip */
+  .action-btn[data-tip]::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1E2028;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    padding: 4px 8px;
+    border-radius: 5px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .1s;
+    z-index: 10;
+  }
+  .action-btn[data-tip]:hover::after { opacity: 1; }
+
+  /* Fallback plain buttons (modal) */
   .btn {
-    display: inline-block;
-    padding: 5px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
     border-radius: 6px;
     border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    font-size: 12px;
+    background: var(--surface-2);
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    margin: 2px;
-    transition: background .1s;
+    transition: border-color .12s, color .12s, background .12s;
+    white-space: nowrap;
   }
-  .btn:hover { background: var(--bg); }
-  .btn-confirm { border-color: var(--fresh);  color: var(--fresh);  }
-  .btn-confirm:hover { background: #dcfce7; }
-  .btn-update  { border-color: var(--accent); color: var(--accent); }
-  .btn-update:hover  { background: #eff6ff; }
-  .btn-close   { border-color: var(--stale);  color: var(--stale);  }
-  .btn-close:hover   { background: #fee2e2; }
+  .btn:hover { border-color: var(--text); color: var(--text); }
 
-  /* ── Reasons list ───────────────────────────────────────── */
+  /* ── Reasons list ────────────────────────────────────────── */
   .reasons { margin: 0; padding: 0; list-style: none; }
   .reasons li {
     font-size: 12px;
     color: var(--muted);
     padding: 2px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
   }
-  .reasons li::before { content: "⚑ "; color: var(--review); }
+  .reasons li::before {
+    content: "▲";
+    font-size: 8px;
+    color: var(--review);
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
 
-  /* ── Modal ──────────────────────────────────────────────── */
+  /* ── Review queue intro ──────────────────────────────────── */
+  .view-intro {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    line-height: 1.7;
+  }
+
+  /* ── Modal ───────────────────────────────────────────────── */
   .modal-backdrop {
     display: none;
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.45);
+    background: rgba(0,0,0,.65);
     z-index: 100;
     align-items: center;
     justify-content: center;
@@ -173,100 +427,150 @@
   .modal-backdrop.open { display: flex; }
   .modal {
     background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 24px;
-    width: 500px;
+    padding: 28px;
+    width: 480px;
     max-width: 95vw;
-    box-shadow: 0 8px 32px rgba(0,0,0,.18);
   }
-  .modal h2 { font-size: 16px; margin-bottom: 14px; }
-  .modal label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; margin-top: 12px; }
-  .modal input, .modal textarea {
+  .modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+  .modal label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  .modal label:first-of-type { margin-top: 0; }
+  .modal input,
+  .modal textarea {
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 7px 10px;
+    padding: 8px 12px;
     font-size: 13px;
     font-family: inherit;
+    background: var(--surface-2);
+    color: var(--text);
+    transition: border-color .12s;
   }
-  .modal textarea { min-height: 80px; resize: vertical; }
-  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .modal input:focus,
+  .modal textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .modal textarea { min-height: 90px; resize: vertical; }
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
   .btn-primary {
     background: var(--accent);
     color: #fff;
     border-color: var(--accent);
-    padding: 7px 16px;
+    padding: 7px 18px;
+    font-weight: 600;
   }
-  .btn-primary:hover { background: #1d4ed8; }
+  .btn-primary:hover { background: #4F46E5; border-color: #4F46E5; color: #fff; }
 
-  /* ── Empty state ────────────────────────────────────────── */
-  .empty { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+  /* ── Empty state ─────────────────────────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+    font-size: 13px;
+  }
 
-  /* ── Toast ──────────────────────────────────────────────── */
+  /* ── Toast ───────────────────────────────────────────────── */
   #toast {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    background: #1f2328;
-    color: #fff;
-    padding: 10px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 11px 18px;
     border-radius: 8px;
     font-size: 13px;
+    font-weight: 500;
     opacity: 0;
-    transition: opacity .3s;
+    transition: opacity .25s;
     z-index: 200;
+    max-width: 320px;
   }
   #toast.show { opacity: 1; }
+
+  /* ── Focus ring ──────────────────────────────────────────── */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>JobFresh</h1>
-  <span>Job Board Freshness Dashboard</span>
+  <div class="header-logo">
+    <span class="header-wordmark">Job<span>Fresh</span></span>
+  </div>
+  <span class="header-sub">Listing freshness monitor</span>
 </header>
 
 <div class="container">
 
-  <!-- Tabs -->
   <nav class="tabs">
     <button class="tab active" data-view="dashboard">Dashboard</button>
     <button class="tab" data-view="review">Review Queue</button>
     <button class="tab" data-view="alljobs">All Active Jobs</button>
   </nav>
 
-  <!-- ── DASHBOARD VIEW ────────────────────────────────────── -->
+  <!-- ── DASHBOARD VIEW ──────────────────────────────────────── -->
   <div id="view-dashboard" class="view active">
     <div class="cards" id="summary-cards">
-      <div class="card"><div class="label">Total Active</div><div class="value" id="c-total">—</div></div>
-      <div class="card fresh"><div class="label">Fresh</div><div class="value" id="c-fresh">—</div></div>
-      <div class="card review"><div class="label">Review Needed</div><div class="value" id="c-review">—</div></div>
-      <div class="card stale"><div class="label">Potentially Stale</div><div class="value" id="c-stale">—</div></div>
-      <div class="card dupe"><div class="label">Possible Duplicates</div><div class="value" id="c-dupe">—</div></div>
+      <div class="card">
+        <div class="card-label">Total Active</div>
+        <div class="card-value" id="c-total">—</div>
+      </div>
+      <div class="card fresh">
+        <div class="card-label">Fresh</div>
+        <div class="card-value" id="c-fresh">—</div>
+      </div>
+      <div class="card review">
+        <div class="card-label">Review Needed</div>
+        <div class="card-value" id="c-review">—</div>
+      </div>
+      <div class="card stale">
+        <div class="card-label">Potentially Stale</div>
+        <div class="card-value" id="c-stale">—</div>
+      </div>
+      <div class="card dupe">
+        <div class="card-label">Possible Duplicates</div>
+        <div class="card-value" id="c-dupe">—</div>
+      </div>
     </div>
 
-    <h2 style="font-size:14px;font-weight:600;margin-bottom:12px;">Freshness Overview</h2>
-    <div class="table-wrap">
-      <table id="dashboard-table">
-        <thead>
-          <tr>
-            <th>Job Title</th>
-            <th>Company</th>
-            <th>Freshness</th>
-            <th>Days Since Activity</th>
-            <th>Flags</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="dashboard-body"></tbody>
-      </table>
-    </div>
+    <p class="section-heading">All listings</p>
+    <div class="job-feed" id="dashboard-body"></div>
   </div>
 
-  <!-- ── REVIEW QUEUE VIEW ─────────────────────────────────── -->
+  <!-- ── REVIEW QUEUE VIEW ───────────────────────────────────── -->
   <div id="view-review" class="view">
-    <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
-      Jobs flagged for attention. Every flag is based on stored dates or duplicate signals — no opaque scoring.
+    <p class="view-intro">
+      Every flag is based on stored dates or duplicate signals — no opaque scoring, no guesswork.
     </p>
     <div class="table-wrap">
       <table>
@@ -275,7 +579,7 @@
             <th>Job Title</th>
             <th>Company</th>
             <th>Status</th>
-            <th>Why Flagged</th>
+            <th>Why flagged</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -284,7 +588,7 @@
     </div>
   </div>
 
-  <!-- ── ALL ACTIVE JOBS VIEW ──────────────────────────────── -->
+  <!-- ── ALL ACTIVE JOBS VIEW ────────────────────────────────── -->
   <div id="view-alljobs" class="view">
     <div class="table-wrap">
       <table>
@@ -303,12 +607,12 @@
     </div>
   </div>
 
-</div><!-- /container -->
+</div>
 
-<!-- ── Update Modal ──────────────────────────────────────── -->
+<!-- ── Update Modal ────────────────────────────────────────── -->
 <div class="modal-backdrop" id="update-modal">
   <div class="modal">
-    <h2>Update Job Posting</h2>
+    <p class="modal-title">Update job posting</p>
     <input type="hidden" id="modal-job-id">
     <label for="modal-title">Job Title</label>
     <input type="text" id="modal-title" placeholder="Job title">
@@ -316,7 +620,7 @@
     <textarea id="modal-desc" placeholder="Job description"></textarea>
     <div class="modal-actions">
       <button class="btn" id="modal-cancel">Cancel</button>
-      <button class="btn btn-primary" id="modal-save">Save &amp; Mark Fresh</button>
+      <button class="btn btn-primary" id="modal-save">Save &amp; mark fresh</button>
     </div>
   </div>
 </div>
@@ -337,22 +641,28 @@ function freshnessLabel(job) {
   if (job.status === 'closed') return `<span class="badge badge-closed">Closed</span>`;
   if (!job.freshness) return '';
   const map = {
-    fresh:  '<span class="badge badge-fresh">Recently Confirmed</span>',
-    review: '<span class="badge badge-review">Confirmation Needed</span>',
-    stale:  '<span class="badge badge-stale">Potentially Stale</span>',
+    fresh:  '<span class="badge badge-fresh">Recently confirmed</span>',
+    review: '<span class="badge badge-review">Confirmation needed</span>',
+    stale:  '<span class="badge badge-stale">Potentially stale</span>',
   };
   let html = map[job.freshness] || '';
-  if (job.isDuplicate) html += ' <span class="badge badge-dupe">Possible Duplicate</span>';
+  if (job.isDuplicate) html += ' <span class="badge badge-dupe">Possible duplicate</span>';
   return html;
 }
 
 function actionButtons(job) {
   if (job.status === 'closed') return '<em style="color:var(--muted);font-size:12px;">Position closed</em>';
-  return `
-    <button class="btn btn-confirm" onclick="confirmJob(${job.id})">✓ Still Hiring</button>
-    <button class="btn btn-update"  onclick="openUpdate(${job.id})">✎ Update</button>
-    <button class="btn btn-close"   onclick="closeJob(${job.id})">✕ Close</button>
-  `;
+  return `<div class="action-group">
+    <button class="action-btn ab-confirm" data-tip="Still hiring" onclick="confirmJob(${job.id})" aria-label="Still hiring">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8.5L6.5 13L14 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="action-btn ab-update" data-tip="Update posting" onclick="openUpdate(${job.id})" aria-label="Update posting">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M11.5 2.5L13.5 4.5L5.5 12.5H3.5V10.5L11.5 2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="action-btn ab-close" data-tip="Close position" onclick="closeJob(${job.id})" aria-label="Close position">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>`;
 }
 
 function toast(msg) {
@@ -386,25 +696,34 @@ async function loadDashboard() {
   document.getElementById('c-stale').textContent  = summary.stale;
   document.getElementById('c-dupe').textContent   = summary.possibleDupes;
 
-  const tbody = document.getElementById('dashboard-body');
+  const feed = document.getElementById('dashboard-body');
   if (!jobs.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">No active jobs found.</td></tr>';
+    feed.innerHTML = '<p class="empty">No active listings.</p>';
     return;
   }
-  tbody.innerHTML = jobs.map(job => `
-    <tr>
-      <td><strong>${esc(job.title)}</strong></td>
-      <td>${esc(job.company)}</td>
-      <td>${freshnessLabel(job)}</td>
-      <td>${job.daysSinceActivity != null ? job.daysSinceActivity + ' days' : '—'}</td>
-      <td>
-        ${job.reasons && job.reasons.length
-          ? `<ul class="reasons">${job.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
-          : '<span style="color:var(--muted);font-size:12px;">None</span>'}
-      </td>
-      <td>${actionButtons(job)}</td>
-    </tr>
-  `).join('');
+  feed.innerHTML = jobs.map(job => {
+    const daysText = job.daysSinceActivity != null
+      ? `${job.daysSinceActivity}d since activity`
+      : '';
+    const reasonsHtml = job.reasons && job.reasons.length
+      ? `<ul class="job-card-reasons">${job.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
+      : '';
+    return `
+    <div class="job-card">
+      <div class="job-card-main">
+        <div class="job-card-title">${esc(job.title)}</div>
+        <div class="job-card-company">${esc(job.company)}</div>
+        <div class="job-card-meta">
+          ${freshnessLabel(job)}
+          ${daysText ? `<span class="job-card-dot"></span><span class="job-card-days">${daysText}</span>` : ''}
+        </div>
+        ${reasonsHtml}
+      </div>
+      <div class="job-card-aside">
+        ${actionButtons(job)}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── Load Review Queue ──────────────────────────────────────────────────────────
@@ -412,13 +731,13 @@ async function loadReviewQueue() {
   const jobs = await api('GET', '/api/review-queue');
   const tbody = document.getElementById('review-body');
   if (!jobs.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No jobs need review right now 🎉</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">All clear — no listings need review right now.</td></tr>';
     return;
   }
   tbody.innerHTML = jobs.map(job => `
     <tr>
-      <td><strong>${esc(job.title)}</strong></td>
-      <td>${esc(job.company)}</td>
+      <td class="td-title">${esc(job.title)}</td>
+      <td class="td-company">${esc(job.company)}</td>
       <td>${freshnessLabel(job)}</td>
       <td>
         <ul class="reasons">
@@ -435,15 +754,15 @@ async function loadAllJobs() {
   const jobs = await api('GET', '/api/jobs?status=active');
   const tbody = document.getElementById('alljobs-body');
   if (!jobs.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">No active jobs.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No active listings.</td></tr>';
     return;
   }
   tbody.innerHTML = jobs.map(job => `
     <tr>
-      <td><strong>${esc(job.title)}</strong></td>
-      <td>${esc(job.company)}</td>
-      <td>${fmtDate(job.postedAt)}</td>
-      <td>${fmtDate(job.lastConfirmedAt)}</td>
+      <td class="td-title">${esc(job.title)}</td>
+      <td class="td-company">${esc(job.company)}</td>
+      <td class="td-days">${fmtDate(job.postedAt)}</td>
+      <td class="td-days">${fmtDate(job.lastConfirmedAt)}</td>
       <td>${freshnessLabel(job)}</td>
       <td>${actionButtons(job)}</td>
     </tr>
@@ -454,7 +773,7 @@ async function loadAllJobs() {
 async function confirmJob(id) {
   try {
     await api('POST', `/api/jobs/${id}/confirm`);
-    toast('✓ Job confirmed as still hiring. Freshness updated.');
+    toast('Confirmed as still hiring — freshness updated.');
     await refreshCurrentView();
   } catch(e) { toast('Error: ' + e.message); }
 }
@@ -471,9 +790,9 @@ async function closeJob(id) {
 function openUpdate(id) {
   const job = allJobsCache.find(j => j.id === id);
   if (!job) return;
-  document.getElementById('modal-job-id').value  = id;
-  document.getElementById('modal-title').value   = job.title;
-  document.getElementById('modal-desc').value    = job.description;
+  document.getElementById('modal-job-id').value = id;
+  document.getElementById('modal-title').value  = job.title;
+  document.getElementById('modal-desc').value   = job.description;
   document.getElementById('update-modal').classList.add('open');
 }
 
@@ -489,7 +808,7 @@ document.getElementById('modal-save').addEventListener('click', async () => {
   try {
     await api('PATCH', `/api/jobs/${id}`, { title, description: desc });
     document.getElementById('update-modal').classList.remove('open');
-    toast('✎ Posting updated. Freshness recalculated.');
+    toast('Posting updated — freshness recalculated.');
     await refreshCurrentView();
   } catch(e) { toast('Error: ' + e.message); }
 });
