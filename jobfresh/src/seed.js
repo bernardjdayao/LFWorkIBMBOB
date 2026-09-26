@@ -21,6 +21,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(10),
     lastConfirmedAt: daysAgo(10),
     status: 'active',
+    applicantsNeeded: 3,
   },
   {
     title: 'Product Designer',
@@ -30,6 +31,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(5),
     lastConfirmedAt: daysAgo(5),
     status: 'active',
+    applicantsNeeded: 1,
   },
   {
     title: 'Data Analyst',
@@ -39,6 +41,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(15),
     lastConfirmedAt: daysAgo(2),
     status: 'active',
+    applicantsNeeded: 5,
   },
 
   // === REVIEW NEEDED jobs (31–60 days since confirmation/update) ===
@@ -50,6 +53,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(45),
     lastConfirmedAt: daysAgo(45),
     status: 'active',
+    applicantsNeeded: 2,
   },
   {
     title: 'DevOps Engineer',
@@ -59,6 +63,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(55),
     lastConfirmedAt: daysAgo(55),
     status: 'active',
+    applicantsNeeded: 4,
   },
   {
     title: 'Frontend Developer',
@@ -68,6 +73,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(40),
     lastConfirmedAt: daysAgo(40),
     status: 'active',
+    applicantsNeeded: 2,
   },
 
   // === STALE jobs (over 60 days since confirmation/update) ===
@@ -79,6 +85,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(90),
     lastConfirmedAt: daysAgo(90),
     status: 'active',
+    applicantsNeeded: 10,
   },
   {
     title: 'HR Generalist',
@@ -88,6 +95,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(80),
     lastConfirmedAt: daysAgo(80),
     status: 'active',
+    applicantsNeeded: 1,
   },
   {
     title: 'Content Writer',
@@ -97,6 +105,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(120),
     lastConfirmedAt: daysAgo(120),
     status: 'active',
+    applicantsNeeded: 3,
   },
 
   // === DUPLICATE / REPOST examples (same company, same title) ===
@@ -108,6 +117,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(90),
     lastConfirmedAt: daysAgo(90),
     status: 'active',
+    applicantsNeeded: 6,
   },
   {
     title: 'Software Engineer',
@@ -117,6 +127,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(3),
     lastConfirmedAt: daysAgo(3),
     status: 'active',
+    applicantsNeeded: 6,
   },
   {
     title: 'Software Engineer – Senior',
@@ -126,6 +137,7 @@ const seeds = [
     lastUpdatedAt:   daysAgo(5),
     lastConfirmedAt: daysAgo(5),
     status: 'active',
+    applicantsNeeded: 1,
   },
 
   // === CLOSED job (should not appear in active listings) ===
@@ -138,6 +150,7 @@ const seeds = [
     lastConfirmedAt: daysAgo(30),
     closedAt:        daysAgo(30),
     status: 'closed',
+    applicantsNeeded: 1,
   },
 ];
 
