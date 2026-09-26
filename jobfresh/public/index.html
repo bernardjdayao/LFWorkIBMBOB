@@ -27,7 +27,26 @@
     --stale-dim:  rgba(239,68,68,.12);
     --dupe:       #A78BFA;
     --dupe-dim:   rgba(167,139,250,.12);
+    --closed:     #8B8FA8;
+    --closed-dim: rgba(139,143,168,.1);
     --radius:     10px;
+  }
+
+  /* ── Light mode overrides ────────────────────────────────── */
+  [data-theme="light"] {
+    --bg:         #F4F6F9;
+    --surface:    #FFFFFF;
+    --surface-2:  #F0F2F5;
+    --border:     #E1E4E8;
+    --text:       #1F2328;
+    --muted:      #57606A;
+    --accent:     #4F46E5;
+    --accent-dim: rgba(79,70,229,.12);
+    --fresh-dim:  rgba(22,163,74,.1);
+    --review-dim: rgba(180,107,0,.1);
+    --stale-dim:  rgba(185,28,28,.1);
+    --dupe-dim:   rgba(109,40,217,.1);
+    --closed-dim: rgba(100,116,139,.1);
   }
 
   body {
@@ -52,6 +71,57 @@
     top: 0;
     z-index: 50;
   }
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .theme-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    user-select: none;
+  }
+  /* Toggle switch */
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+  }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--accent); }
+  .toggle-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    pointer-events: none;
+  }
+  .toggle input:checked ~ .toggle-thumb { transform: translateX(16px); }
   .header-logo {
     display: flex;
     align-items: baseline;
@@ -143,10 +213,11 @@
     height: 2px;
     background: var(--border);
   }
-  .card.fresh::before  { background: var(--fresh);  }
-  .card.review::before { background: var(--review); }
-  .card.stale::before  { background: var(--stale);  }
-  .card.dupe::before   { background: var(--dupe);   }
+  .card.fresh::before   { background: var(--fresh);  }
+  .card.review::before  { background: var(--review); }
+  .card.stale::before   { background: var(--stale);  }
+  .card.dupe::before    { background: var(--dupe);   }
+  .card.closed::before  { background: var(--closed); }
 
   .card .card-label {
     font-size: 11px;
@@ -164,10 +235,12 @@
     letter-spacing: -1px;
     color: var(--text);
   }
-  .card.fresh  .card-value { color: var(--fresh);  }
-  .card.review .card-value { color: var(--review); }
-  .card.stale  .card-value { color: var(--stale);  }
-  .card.dupe   .card-value { color: var(--dupe);   }
+  .card.fresh  .card-value  { color: var(--fresh);  }
+  .card.review .card-value  { color: var(--review); }
+  .card.stale  .card-value  { color: var(--stale);  }
+  .card.dupe   .card-value  { color: var(--dupe);   }
+  .card.closed .card-value  { color: var(--closed); }
+  .job-card-closed { opacity: 0.6; }
 
   /* ── Section heading ─────────────────────────────────────── */
   .section-heading {
@@ -528,6 +601,17 @@
     <span class="header-wordmark">Job<span>Fresh</span></span>
   </div>
   <span class="header-sub">Listing freshness monitor</span>
+  <div class="header-right">
+    <div class="toggle-wrap">
+      <span class="theme-label">Light</span>
+      <label class="toggle" aria-label="Toggle dark mode">
+        <input type="checkbox" id="theme-toggle" checked>
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+      <span class="theme-label">Dark</span>
+    </div>
+  </div>
 </header>
 
 <div class="container">
@@ -536,6 +620,7 @@
     <button class="tab active" data-view="dashboard">Dashboard</button>
     <button class="tab" data-view="review">Review Queue</button>
     <button class="tab" data-view="alljobs">All Active Jobs</button>
+    <button class="tab" data-view="closed">Closed Jobs</button>
   </nav>
 
   <!-- ── DASHBOARD VIEW ──────────────────────────────────────── -->
@@ -561,10 +646,31 @@
         <div class="card-label">Possible Duplicates</div>
         <div class="card-value" id="c-dupe">—</div>
       </div>
+      <div class="card closed">
+        <div class="card-label">Closed</div>
+        <div class="card-value" id="c-closed">0</div>
+      </div>
     </div>
 
     <p class="section-heading">All listings</p>
     <div class="job-feed" id="dashboard-body"></div>
+  </div>
+
+  <!-- ── CLOSED JOBS VIEW ───────────────────────────────────── -->
+  <div id="view-closed" class="view">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Job Title</th>
+            <th>Company</th>
+            <th>Posted</th>
+            <th>Closed On</th>
+          </tr>
+        </thead>
+        <tbody id="closed-body"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ── REVIEW QUEUE VIEW ───────────────────────────────────── -->
@@ -695,35 +801,36 @@ async function loadDashboard() {
   document.getElementById('c-review').textContent = summary.reviewNeeded;
   document.getElementById('c-stale').textContent  = summary.stale;
   document.getElementById('c-dupe').textContent   = summary.possibleDupes;
+  document.getElementById('c-closed').textContent = summary.totalClosed ?? 0;
 
   const feed = document.getElementById('dashboard-body');
   if (!jobs.length) {
     feed.innerHTML = '<p class="empty">No active listings.</p>';
-    return;
-  }
-  feed.innerHTML = jobs.map(job => {
-    const daysText = job.daysSinceActivity != null
-      ? `${job.daysSinceActivity}d since activity`
-      : '';
-    const reasonsHtml = job.reasons && job.reasons.length
-      ? `<ul class="job-card-reasons">${job.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
-      : '';
-    return `
-    <div class="job-card">
-      <div class="job-card-main">
-        <div class="job-card-title">${esc(job.title)}</div>
-        <div class="job-card-company">${esc(job.company)}</div>
-        <div class="job-card-meta">
-          ${freshnessLabel(job)}
-          ${daysText ? `<span class="job-card-dot"></span><span class="job-card-days">${daysText}</span>` : ''}
+  } else {
+    feed.innerHTML = jobs.map(job => {
+      const daysText = job.daysSinceActivity != null
+        ? `${job.daysSinceActivity}d since activity`
+        : '';
+      const reasonsHtml = job.reasons && job.reasons.length
+        ? `<ul class="job-card-reasons">${job.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`
+        : '';
+      return `
+      <div class="job-card">
+        <div class="job-card-main">
+          <div class="job-card-title">${esc(job.title)}</div>
+          <div class="job-card-company">${esc(job.company)}</div>
+          <div class="job-card-meta">
+            ${freshnessLabel(job)}
+            ${daysText ? `<span class="job-card-dot"></span><span class="job-card-days">${daysText}</span>` : ''}
+          </div>
+          ${reasonsHtml}
         </div>
-        ${reasonsHtml}
-      </div>
-      <div class="job-card-aside">
-        ${actionButtons(job)}
-      </div>
-    </div>`;
-  }).join('');
+        <div class="job-card-aside">
+          ${actionButtons(job)}
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ── Load Review Queue ──────────────────────────────────────────────────────────
@@ -783,7 +890,8 @@ async function closeJob(id) {
   try {
     await api('POST', `/api/jobs/${id}/close`);
     toast('Position closed and removed from active listings.');
-    await refreshCurrentView();
+    // Refresh the current view AND always sync the closed count + closed tab
+    await Promise.all([refreshCurrentView(), syncClosedState()]);
   } catch(e) { toast('Error: ' + e.message); }
 }
 
@@ -816,10 +924,45 @@ document.getElementById('modal-save').addEventListener('click', async () => {
 // ── Tabs ───────────────────────────────────────────────────────────────────────
 let currentView = 'dashboard';
 
+// ── Load Closed Jobs ───────────────────────────────────────────────────────────
+async function loadClosedJobs() {
+  const jobs  = await api('GET', '/api/jobs?status=closed');
+  const tbody = document.getElementById('closed-body');
+  if (!jobs.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">No closed listings yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = jobs.map(job => `
+    <tr>
+      <td class="td-title">${esc(job.title)}</td>
+      <td class="td-company">${esc(job.company)}</td>
+      <td class="td-days">${fmtDate(job.postedAt)}</td>
+      <td class="td-days">${job.closedAt ? fmtDate(job.closedAt) : '—'}</td>
+    </tr>
+  `).join('');
+}
+
+// Always keep the closed card count and closed tab in sync,
+// regardless of which tab triggered the action.
+async function syncClosedState() {
+  // Update the dashboard card count
+  const summary = await api('GET', '/api/dashboard');
+  document.getElementById('c-closed').textContent = summary.totalClosed ?? 0;
+  document.getElementById('c-total').textContent  = summary.totalActive;
+  document.getElementById('c-fresh').textContent  = summary.fresh;
+  document.getElementById('c-review').textContent = summary.reviewNeeded;
+  document.getElementById('c-stale').textContent  = summary.stale;
+  document.getElementById('c-dupe').textContent   = summary.possibleDupes;
+
+  // If the closed tab is currently visible, refresh its table too
+  if (currentView === 'closed') await loadClosedJobs();
+}
+
 async function refreshCurrentView() {
   if (currentView === 'dashboard') await loadDashboard();
   else if (currentView === 'review') await loadReviewQueue();
   else if (currentView === 'alljobs') await loadAllJobs();
+  else if (currentView === 'closed') await loadClosedJobs();
 }
 
 document.querySelectorAll('.tab').forEach(tab => {
@@ -842,6 +985,28 @@ function esc(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
+
+// ── Theme toggle ───────────────────────────────────────────────────────────────
+(function () {
+  const html    = document.documentElement;
+  const toggle  = document.getElementById('theme-toggle');
+  const STORAGE = 'jf-theme';
+
+  function applyTheme(dark) {
+    html.setAttribute('data-theme', dark ? 'dark' : 'light');
+    toggle.checked = dark;
+  }
+
+  // Restore saved preference, default to dark
+  const saved = localStorage.getItem(STORAGE);
+  applyTheme(saved === null ? true : saved === 'dark');
+
+  toggle.addEventListener('change', () => {
+    const dark = toggle.checked;
+    localStorage.setItem(STORAGE, dark ? 'dark' : 'light');
+    applyTheme(dark);
+  });
+})();
 
 // ── Init ───────────────────────────────────────────────────────────────────────
 loadDashboard();

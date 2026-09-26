@@ -108,6 +108,7 @@ function analyseAll(jobs) {
  */
 function buildDashboard(annotatedJobs) {
   const active    = annotatedJobs.filter(j => j.status === 'active');
+  const closed    = annotatedJobs.filter(j => j.status === 'closed');
   const fresh     = active.filter(j => j.freshness === 'fresh'  && !j.isDuplicate);
   const review    = active.filter(j => j.freshness === 'review');
   const stale     = active.filter(j => j.freshness === 'stale');
@@ -119,6 +120,7 @@ function buildDashboard(annotatedJobs) {
     reviewNeeded:   review.length,
     stale:          stale.length,
     possibleDupes:  duplicate.length,
+    totalClosed:    closed.length,
   };
 }
 

@@ -136,6 +136,7 @@ const seeds = [
     postedAt:        daysAgo(60),
     lastUpdatedAt:   daysAgo(30),
     lastConfirmedAt: daysAgo(30),
+    closedAt:        daysAgo(30),
     status: 'closed',
   },
 ];

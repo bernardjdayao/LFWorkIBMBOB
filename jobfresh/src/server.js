@@ -27,7 +27,9 @@ function now() {
 app.get('/api/dashboard', (req, res) => {
   const active    = allActiveJobs();
   const annotated = analyseAll(active);
-  const summary   = buildDashboard(annotated);
+  // Merge annotated active jobs with raw closed jobs so buildDashboard sees all
+  const closed    = db.all(j => j.status === 'closed');
+  const summary   = buildDashboard([...annotated, ...closed]);
   res.json(summary);
 });
 
@@ -121,7 +123,7 @@ app.post('/api/jobs/:id/close', (req, res) => {
   const job = db.get(j => j.id === id);
   if (!job) return res.status(404).json({ error: 'Job not found.' });
 
-  db.update(j => j.id === id, { status: 'closed' });
+  db.update(j => j.id === id, { status: 'closed', closedAt: now() });
   const updated = db.get(j => j.id === id);
   res.json(updated);
 });

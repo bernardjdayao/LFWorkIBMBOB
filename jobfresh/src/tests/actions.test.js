@@ -6,7 +6,7 @@
 
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
-const { analyseAll } = require('../freshness');
+const { analyseAll, buildDashboard } = require('../freshness');
 
 // ── In-memory store helpers ───────────────────────────────────────────────────
 
@@ -137,6 +137,71 @@ describe('close action', () => {
     const active = store.active();
     assert.equal(active.length, 1);
     assert.equal(active[0].title, 'Job B');
+  });
+});
+
+// ── closedAt tracking ─────────────────────────────────────────────────────────
+
+describe('closedAt tracking', () => {
+  test('closedAt is set when a job is closed', () => {
+    const store = makeStore();
+    const job = store.insert({
+      title: 'To Close', company: 'Corp', description: 'Desc.',
+      postedAt: daysAgo(10), lastUpdatedAt: daysAgo(5), lastConfirmedAt: daysAgo(5),
+      status: 'active',
+    });
+
+    const ts = nowStr();
+    store.update(job.id, { status: 'closed', closedAt: ts });
+
+    const closed = store.get(job.id);
+    assert.equal(closed.status, 'closed');
+    assert.ok(closed.closedAt, 'closedAt should be set');
+    assert.equal(closed.closedAt, ts);
+  });
+
+  test('closedAt is not set on active jobs', () => {
+    const store = makeStore();
+    const job = store.insert({
+      title: 'Still Open', company: 'Corp', description: 'Desc.',
+      postedAt: daysAgo(5), lastUpdatedAt: daysAgo(5), lastConfirmedAt: daysAgo(5),
+      status: 'active',
+    });
+    assert.ok(!store.get(job.id).closedAt, 'Active job should have no closedAt');
+  });
+
+  test('totalClosed in buildDashboard counts closed jobs', () => {
+    const jobs = [
+      { id: 1, status: 'active',  freshness: 'fresh', isDuplicate: false },
+      { id: 2, status: 'closed',  closedAt: nowStr() },
+      { id: 3, status: 'closed',  closedAt: nowStr() },
+    ];
+    const summary = buildDashboard(jobs);
+    assert.equal(summary.totalClosed, 2);
+  });
+
+  test('totalClosed is 0 when no jobs are closed', () => {
+    const jobs = [
+      { id: 1, status: 'active', freshness: 'fresh', isDuplicate: false },
+    ];
+    const summary = buildDashboard(jobs);
+    assert.equal(summary.totalClosed, 0);
+  });
+
+  test('closing a job increases totalClosed and decreases totalActive', () => {
+    const jobs = [
+      { id: 1, status: 'active', freshness: 'fresh', isDuplicate: false },
+      { id: 2, status: 'active', freshness: 'fresh', isDuplicate: false },
+    ];
+    const before = buildDashboard(jobs);
+    assert.equal(before.totalActive, 2);
+    assert.equal(before.totalClosed, 0);
+
+    jobs[1].status = 'closed';
+    jobs[1].closedAt = nowStr();
+    const after = buildDashboard(jobs);
+    assert.equal(after.totalActive, 1);
+    assert.equal(after.totalClosed, 1);
   });
 });
 
