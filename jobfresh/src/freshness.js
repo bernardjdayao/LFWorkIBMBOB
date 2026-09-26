@@ -124,4 +124,37 @@ function buildDashboard(annotatedJobs) {
   };
 }
 
-module.exports = { computeFreshness, analyseAll, buildDashboard, daysSince, normaliseTitle };
+/**
+ * Returns an applicant-facing status object for a job.
+ * Used by the job board UI and its tests.
+ *
+ * Returns:
+ *   { state: 'fresh'|'review'|'stale', headline: string, detail: string }
+ */
+function applicantStatus(job) {
+  const refDate = job.lastConfirmedAt > job.lastUpdatedAt
+    ? job.lastConfirmedAt : job.lastUpdatedAt;
+  const days = daysSince(refDate);
+
+  if (days <= 30) {
+    return {
+      state:    'fresh',
+      headline: 'Recently confirmed by employer',
+      detail:   `Confirmed ${days === 0 ? 'today' : days === 1 ? '1 day ago' : days + ' days ago'} — this position was recently confirmed as still accepting applications.`,
+    };
+  }
+  if (days <= 60) {
+    return {
+      state:    'review',
+      headline: 'Confirmation needed',
+      detail:   `The employer has not recently confirmed that this position is still accepting applications. Last activity: ${days} days ago.`,
+    };
+  }
+  return {
+    state:    'stale',
+    headline: 'Potentially stale',
+    detail:   `This posting has not been recently confirmed or updated by the employer. Last activity: ${days} days ago.`,
+  };
+}
+
+module.exports = { computeFreshness, analyseAll, buildDashboard, daysSince, normaliseTitle, applicantStatus };

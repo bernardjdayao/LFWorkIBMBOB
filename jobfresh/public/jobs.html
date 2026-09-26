@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JobFresh – Job Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<style>
+  /* ── Applicant-page additions ──────────────────────────────── */
+  .jobs-header {
+    margin-bottom: 28px;
+  }
+  .jobs-header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .jobs-header p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .jobs-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    margin-bottom: 14px;
+  }
+
+  /* Confirmation notice block inside each card */
+  .confirmation-block {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .confirmation-block.cb-fresh {
+    background: var(--fresh-dim);
+    border: 1px solid rgba(34,197,94,.2);
+  }
+  .confirmation-block.cb-review {
+    background: var(--review-dim);
+    border: 1px solid rgba(245,158,11,.2);
+  }
+  .confirmation-block.cb-stale {
+    background: var(--stale-dim);
+    border: 1px solid rgba(239,68,68,.2);
+  }
+  .cb-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    line-height: 1.5;
+  }
+  .cb-body {}
+  .cb-headline {
+    font-weight: 600;
+    color: var(--text);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .cb-detail {
+    color: var(--muted);
+  }
+
+  /* Apply button */
+  .apply-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 9px 20px;
+    border-radius: 8px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .12s;
+    text-decoration: none;
+  }
+  .apply-btn:hover { background: #4338ca; }
+
+  /* Back link in header */
+  .header-back {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    padding-right: 14px;
+    border-right: 1px solid var(--border);
+    margin-right: 4px;
+    text-decoration: none;
+    transition: color .12s;
+    flex-shrink: 0;
+  }
+  .header-back:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-logo">
+    <span class="header-wordmark">Job<span>Fresh</span></span>
+  </div>
+  <span class="header-sub">Open positions</span>
+  <div class="header-right">
+    <a class="header-back" href="/index.html">Admin →</a>
+    <div class="toggle-wrap">
+      <span class="theme-label">Light</span>
+      <label class="toggle" aria-label="Toggle dark mode">
+        <input type="checkbox" id="theme-toggle" checked>
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+      <span class="theme-label">Dark</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="jobs-header">
+    <h1>Open Positions</h1>
+    <p>Each listing shows when the employer last confirmed this role is still accepting applications.</p>
+  </div>
+
+  <p class="jobs-count" id="jobs-count"></p>
+  <div class="job-feed" id="jobs-feed">
+    <p class="empty">Loading…</p>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Utilities (duplicated minimally from index.js — no shared module needed) ──
+
+function fmtDate(str) {
+  if (!str) return '—';
+  return new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function fmtRelative(dateStr) {
+  if (!dateStr) return null;
+  const days = Math.floor((Date.now() - new Date(dateStr)) / 86400000);
+  if (days === 0) return 'today';
+  if (days === 1) return '1 day ago';
+  return `${days} days ago`;
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Returns the applicant-facing confirmation block HTML for a job.
+ * Three states, based solely on the freshness value from the API.
+ */
+function applicantFreshnessBlock(job) {
+  const refDate = job.lastConfirmedAt > job.lastUpdatedAt
+    ? job.lastConfirmedAt : job.lastUpdatedAt;
+  const relative = fmtRelative(refDate);
+
+  if (job.freshness === 'fresh') {
+    return `
+    <div class="confirmation-block cb-fresh">
+      <span class="cb-icon">✓</span>
+      <div class="cb-body">
+        <span class="cb-headline">Recently confirmed by employer</span>
+        <span class="cb-detail">Confirmed ${relative} — this position was recently confirmed as still accepting applications.</span>
+      </div>
+    </div>`;
+  }
+  if (job.freshness === 'review') {
+    return `
+    <div class="confirmation-block cb-review">
+      <span class="cb-icon">⏳</span>
+      <div class="cb-body">
+        <span class="cb-headline">Confirmation needed</span>
+        <span class="cb-detail">The employer has not recently confirmed that this position is still accepting applications. Last activity: ${relative}.</span>
+      </div>
+    </div>`;
+  }
+  // stale
+  return `
+  <div class="confirmation-block cb-stale">
+    <span class="cb-icon">⚠</span>
+    <div class="cb-body">
+      <span class="cb-headline">Potentially stale</span>
+      <span class="cb-detail">This posting has not been recently confirmed or updated by the employer. Last activity: ${relative}.</span>
+    </div>
+  </div>`;
+}
+
+// ── Load jobs ─────────────────────────────────────────────────────────────────
+async function loadJobs() {
+  const res  = await fetch('/api/jobs?status=active');
+  const jobs = await res.json();
+
+  const countEl = document.getElementById('jobs-count');
+  const feedEl  = document.getElementById('jobs-feed');
+
+  countEl.textContent = `${jobs.length} open position${jobs.length !== 1 ? 's' : ''}`;
+
+  if (!jobs.length) {
+    feedEl.innerHTML = '<p class="empty">No open positions at this time.</p>';
+    return;
+  }
+
+  feedEl.innerHTML = jobs.map(job => `
+  <div class="job-card">
+    <div class="job-card-top">
+      <div class="job-card-title">${esc(job.title)}</div>
+    </div>
+    <div class="job-card-meta">
+      ${job.company ? `<span class="job-card-company">${esc(job.company)}</span>` : ''}
+      <span class="job-card-dot">•</span>
+      <span class="job-card-days">Posted ${fmtDate(job.postedAt)}</span>
+    </div>
+    <div class="job-card-desc">${esc(job.description || '')}</div>
+    ${applicantFreshnessBlock(job)}
+    <a class="apply-btn" href="#apply-${job.id}" onclick="handleApply(event, ${job.id})">
+      Apply Now
+    </a>
+  </div>`).join('');
+}
+
+function handleApply(e, id) {
+  e.preventDefault();
+  const el = document.getElementById('toast');
+  el.textContent = 'Application submitted (demo only).';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+(function () {
+  const html   = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const KEY    = 'jf-theme';
+
+  function applyTheme(dark) {
+    html.setAttribute('data-theme', dark ? 'dark' : 'light');
+    toggle.checked = dark;
+  }
+
+  const saved = localStorage.getItem(KEY);
+  applyTheme(saved === null ? true : saved === 'dark');
+
+  toggle.addEventListener('change', () => {
+    const dark = toggle.checked;
+    localStorage.setItem(KEY, dark ? 'dark' : 'light');
+    applyTheme(dark);
+  });
+})();
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadJobs();
+</script>
+</body>
+</html>
