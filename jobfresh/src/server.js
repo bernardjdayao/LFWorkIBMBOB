@@ -146,6 +146,10 @@ app.get('/api/jobs/:id', (req, res) => {
   res.json(job);
 });
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+})
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 3000;
